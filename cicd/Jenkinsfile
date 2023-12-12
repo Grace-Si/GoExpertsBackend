@@ -39,36 +39,38 @@ pipeline {
             }
         }
 
-        stage('Upload Docker image') {
+        // # upload to Docker Hub
+        // stage('Upload Docker image') {
+        //     steps {
+        //         withCredentials([
+        //             usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')
+        //         ])  {
+        //             sh "echo $PASSWORD | docker login -u ${USERNAME} --password-stdin"
+        //             sh 'docker push grace1676/goexperts:latest'
+        //         }
+        //     }
+        // }
+
+    //    # run Docker in ec2 by pulling image from Docker Hub
+    //     stage('Run Docker in ec2') {
+    //         steps {
+    //             sshagent (['ec2-server-key']) {
+    //                 sh 'ssh -o StrictHostKeyChecking=no ec2-user@${ip} docker run -dp 8000:8000 -t grace1676/techscrum:latest'
+    //             }
+    //         }
+    //     }
+
+        # upload Docker image to ECR
+        stage('Upload Docker image to ECR') {
             steps {
-                withCredentials([
-                    usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')
-                ])  {
-                    sh "echo $PASSWORD | docker login -u ${USERNAME} --password-stdin"
-                    sh 'docker push grace1676/goexperts:latest'
+                script {
+                    echo 'Upload Docker image to ECR'
+                    docker.withRegistry("https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com", "ecr:ap-southeast-2:grace") {
+                        docker.image("${ECR_REPO_NAME}:${DOCKER_IMAGE_TAG}").push()
+                    }
                 }
             }
         }
-
-       
-        // stage('Run Docker in ec2') {
-        //     steps {
-        //         sshagent (['ec2-server-key']) {
-        //             sh 'ssh -o StrictHostKeyChecking=no ec2-user@${ip} docker run -dp 8000:8000 -t grace1676/techscrum:latest'
-        //         }
-        //     }
-        // }
-
-        // stage('Upload Docker image to ECR') {
-        //     steps {
-        //         script {
-        //             echo 'Upload Docker image to ECR'
-        //             docker.withRegistry("https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com", "ecr:ap-southeast-2:grace") {
-        //                 docker.image("${ECR_REPO_NAME}:${DOCKER_IMAGE_TAG}").push()
-        //             }
-        //         }
-        //     }
-        // }
                   
 //         stage('Run on EC2') {
 //             steps {
