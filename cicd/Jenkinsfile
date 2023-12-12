@@ -65,7 +65,7 @@ pipeline {
             steps {
                 script {
                     echo 'Upload Docker image to ECR'
-                    docker.withRegistry("https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com", "ecr:ap-southeast-2:grace") {
+                    docker.withRegistry("https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com", "ecr:ap-southeast-2:AWS-Credential") {
                         docker.image("${ECR_REPO_NAME}:${DOCKER_IMAGE_TAG}").push()
                     }
                 }
