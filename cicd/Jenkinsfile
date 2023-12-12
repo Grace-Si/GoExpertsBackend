@@ -60,7 +60,7 @@ pipeline {
     //         }
     //     }
 
-        # upload Docker image to ECR
+   
         stage('Upload Docker image to ECR') {
             steps {
                 script {
