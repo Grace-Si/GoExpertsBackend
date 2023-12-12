@@ -15,6 +15,6 @@ RUN npm run build
 COPY tail-logs.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/tail-logs.sh
 
-EXPOSE 8000
+EXPOSE 5000
 CMD ["/usr/local/bin/tail-logs.sh", "npm", "start"]
 
