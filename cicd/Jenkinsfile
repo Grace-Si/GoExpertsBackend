@@ -1,0 +1,87 @@
+pipeline {
+    
+    agent any
+    
+    environment {
+    AWS_DEFAULT_REGION = 'ap-southeast-2'
+    AWS_ACCOUNT_ID = '148326739570'
+    ECR_REPO_NAME = 'goexpertsbe'
+    DOCKER_IMAGE_TAG = 'latest'
+    // EC2_INSTANCE_IP = '3.106.54.37'
+    }
+
+    tools {
+            nodejs 'NodeJS-12' // Referring to the configured Node.js installation name
+        }
+
+    stages {
+        stage('Git checkout') {
+            steps{
+                // Get source code from a GitHub repository
+                git branch:'grace', credentialsId:'SSH-key', url:'git@github.com:Grace-Si/GoExpertsBackend.git'
+            }
+        }
+
+        stage('npm install') {
+            steps{
+                dir("./") {
+                    sh 'npm install'
+                }
+            }
+        }
+
+        
+        stage('Build docker image') {
+            steps {
+                dir("./") {
+                    sh "docker build -t ${ECR_REPO_NAME}:latest ."
+                }
+            }
+        }
+
+        stage('Upload Docker image') {
+            steps {
+                withCredentials([
+                    usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')
+                ])  {
+                    sh "echo $PASSWORD | docker login -u ${USERNAME} --password-stdin"
+                    sh 'docker push grace1676/goexperts:latest'
+                }
+            }
+        }
+
+       
+        // stage('Run Docker in ec2') {
+        //     steps {
+        //         sshagent (['ec2-server-key']) {
+        //             sh 'ssh -o StrictHostKeyChecking=no ec2-user@${ip} docker run -dp 8000:8000 -t grace1676/techscrum:latest'
+        //         }
+        //     }
+        // }
+
+        // stage('Upload Docker image to ECR') {
+        //     steps {
+        //         script {
+        //             echo 'Upload Docker image to ECR'
+        //             docker.withRegistry("https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com", "ecr:ap-southeast-2:grace") {
+        //                 docker.image("${ECR_REPO_NAME}:${DOCKER_IMAGE_TAG}").push()
+        //             }
+        //         }
+        //     }
+        // }
+                  
+//         stage('Run on EC2') {
+//             steps {
+//                 withCredentials([usernamePassword(credentialsId: 'grace-id', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+//                 script {
+//                     sshagent(['ec2-server-key']) {
+//                      sh """
+//                         ssh -o StrictHostKeyChecking=no ec2-user@${EC2_INSTANCE_IP} << 'EOF'
+//                         aws ecr get-login-password --region ap-southeast-2 | sudo docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.ap-southeast-2.amazonaws.com
+//                         sudo docker pull ${AWS_ACCOUNT_ID}.dkr.ecr.ap-southeast-2.amazonaws.com/techscrumbe:latest
+//                         sudo docker run -dp 8000:8000 ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPO_NAME}:${DOCKER_IMAGE_TAG}
+// EOF
+//                     """
+//         }
+    }
+}
