@@ -17,4 +17,4 @@ RUN npm run build
 
 EXPOSE 5000
 # CMD ["/usr/local/bin/tail-logs.sh", "npm", "start"]
-CMD [ "npm", "start" ]
+CMD [ "npm", "run", "dev" ]
