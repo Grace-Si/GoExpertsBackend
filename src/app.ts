@@ -22,6 +22,11 @@ app.use("/api", apiRouter);
 // catch 404 and forward to error handler
 app.use(notFind);
 
+// Health Check Endpoint
+app.get("/health", (req, res) => {
+  res.status(200).send("Healthy");
+});
+
 // error handler
 app.use((err: HttpError, req: Request, res: Response) => {
   // set locals, only providing error in development
